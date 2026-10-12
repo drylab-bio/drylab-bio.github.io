@@ -1,0 +1,1758 @@
+/* ==========================================================================
+   DRYLAB-Bench — project page styles
+   Palette: validated via dataviz skill
+     - ordinal blue ramp (conditions/frames) light + dark: all checks pass
+     - categorical blue<->orange (BRS views) light + dark: all checks pass
+     - 8-step ordinal ramp for the 8 risk categories was TESTED AND REJECTED
+       (adjacent dL 0.047 < 0.06 floor). F1..F8 are nominal — a taxonomy, not a
+       progression — so the coverage chart is single-hue slot-1 blue and identity
+       is carried by the F-code label on every row, not by colour.
+   ========================================================================== */
+
+/* ---------- tokens: light (default) ---------- */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-2: #f2f2ef;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.10);
+  --accent: #2a78d6;
+  --accent-ink: #184f95;
+  --accent-wash: #eaf2fc;
+  --view-valid: #2a78d6;
+  --view-floor: #eb6834;
+  --cond-1: #86b6ef;
+  --cond-2: #5598e7;
+  --cond-3: #2a78d6;
+  --cond-4: #184f95;
+  --shadow: 0 1px 2px rgba(11, 11, 11, 0.04), 0 10px 30px rgba(11, 11, 11, 0.06);
+  --radius: 12px;
+  --sans: "Manrope", "Avenir Next", Avenir, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --display: "Playfair Display", "Bodoni 72", "Bodoni MT", Didot, Georgia, serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ---------- tokens: dark (OS preference, beaten by explicit theme stamp) ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #232322;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --accent: #3987e5;
+    --accent-ink: #86b6ef;
+    --accent-wash: #16283f;
+    --view-valid: #3987e5;
+    --view-floor: #d95926;
+    --cond-1: #9ec5f4;
+    --cond-2: #6da7ec;
+    --cond-3: #3987e5;
+    --cond-4: #256abf;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.45);
+  }
+}
+
+/* ---------- tokens: dark (explicit toggle) ---------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-2: #232322;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --ink-muted: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.10);
+  --accent: #3987e5;
+  --accent-ink: #86b6ef;
+  --accent-wash: #16283f;
+  --view-valid: #3987e5;
+  --view-floor: #d95926;
+  --cond-1: #9ec5f4;
+  --cond-2: #6da7ec;
+  --cond-3: #3987e5;
+  --cond-4: #256abf;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Absolutely-positioned chart/waffle tooltips that reach past the right edge
+   must not widen the document. clip (unlike hidden) creates no scroll
+   container, so the sticky header keeps sticking to the viewport. */
+html, body { overflow-x: clip; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .nav-brand {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+}
+
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 0 0 8px 0;
+  z-index: 100;
+}
+.skip-link:focus { left: 0; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.wrap { max-width: 1060px; margin: 0 auto; padding: 0 22px; }
+
+section { scroll-margin-top: 84px; }
+
+/* ==========================================================================
+   Header / nav
+   ========================================================================== */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--page);
+  background: color-mix(in srgb, var(--page) 86%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 60px;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.nav-brand:hover { text-decoration: none; }
+.nav-brand img { width: 30px; height: 30px; border-radius: 8px; }
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  align-items: center;
+}
+.nav-links a {
+  color: var(--ink-2);
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.nav-links a:hover { color: var(--ink); background: var(--surface-2); text-decoration: none; }
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+  padding: 0;
+}
+.icon-btn:hover { color: var(--ink); border-color: var(--axis); }
+.icon-btn svg { width: 17px; height: 17px; }
+.theme-toggle .icon-moon { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .theme-toggle .icon-moon { display: block; }
+  :root:where(:not([data-theme="light"])) .theme-toggle .icon-sun { display: none; }
+}
+
+@media (max-width: 760px) {
+  .nav-links .nav-text-link { display: none; }
+}
+
+/* ---------- section menu (narrow viewports) ---------- */
+/* The inline section links are display:none below 760px; the menu button shown
+   instead opens a two-column drawer that hangs off the sticky header. */
+.nav-menu-btn { display: none; }
+.nav-menu-btn .icon-x { display: none; }
+.nav-menu-btn[aria-expanded="true"] .icon-burger { display: none; }
+.nav-menu-btn[aria-expanded="true"] .icon-x { display: block; }
+.nav-drawer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px 10px;
+  padding: 8px 22px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--page);
+}
+.nav-drawer[hidden] { display: none; }
+.nav-drawer a {
+  padding: 9px 12px;
+  border-radius: 8px;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+}
+.nav-drawer a:hover { background: var(--surface-2); color: var(--ink); text-decoration: none; }
+@media (max-width: 760px) {
+  .nav-menu-btn { display: inline-flex; }
+}
+
+/* ==========================================================================
+   Hero
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 150px 0 40px;   /* top padding holds the DNA band clear of the copy */
+  text-align: center;
+  background:
+    radial-gradient(1100px 420px at 50% -140px, var(--accent-wash), transparent 70%),
+    var(--page);
+}
+.hero .wrap { position: relative; z-index: 1; }
+@media (max-width: 700px) { .hero { padding-top: 108px; } }
+
+.hero-logo {
+  width: 124px;
+  height: 124px;
+  margin: 0 auto 18px;
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: clamp(2.1rem, 5vw, 3.1rem);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
+
+.hero .subtitle {
+  margin: 0 auto 20px;
+  max-width: 760px;
+  font-size: clamp(1.02rem, 2.1vw, 1.22rem);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.hero-claim {
+  max-width: 780px;
+  margin: 0 auto 22px;
+  color: var(--ink-2);
+  font-size: clamp(1rem, 1.8vw, 1.12rem);
+  line-height: 1.6;
+}
+
+.pill {
+  display: inline-block;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-2);
+  border-radius: 999px;
+  padding: 5px 15px;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+  margin: 0 0 18px;
+}
+
+.authors {
+  margin: 0 auto 12px;
+  max-width: 900px;
+  color: var(--ink-2);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+.author-groups {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px 18px;
+}
+.author-group {
+  white-space: nowrap;
+  font-family: var(--sans);
+  font-weight: 500;
+}
+.author-group strong {
+  color: var(--ink);
+  font-weight: inherit;
+}
+.author-mark {
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+.author-roles,
+.affiliations,
+.author-note {
+  margin: 4px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.84rem;
+}
+.author-roles {
+  margin-top: 8px;
+}
+.affiliations {
+  color: var(--ink-2);
+}
+.author-note {
+  font-size: 0.78rem;
+}
+.authors .tbd {
+  color: var(--ink-muted);
+  font-style: italic;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 0.94rem;
+  font-weight: 560;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.btn:hover { text-decoration: none; border-color: var(--axis); }
+.btn svg { width: 16px; height: 16px; }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+:root[data-theme="dark"] .btn-primary { color: #0d0d0d; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .btn-primary { color: #0d0d0d; }
+}
+.btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+:root[data-theme="dark"] .btn-primary:hover { background: #6da7ec; border-color: #6da7ec; }
+.btn-disabled {
+  color: var(--ink-muted);
+  cursor: default;
+  background: transparent;
+}
+.btn-disabled:hover { border-color: var(--border); text-decoration: none; }
+
+/* responsible-use strip */
+.banner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  text-align: left;
+  max-width: 860px;
+  margin: 30px auto 0;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  color: var(--ink-2);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.banner svg { flex: none; width: 18px; height: 18px; margin-top: 2px; color: var(--accent); }
+.banner p { margin: 0; }
+.banner strong { color: var(--ink); }
+
+/* ==========================================================================
+   Sections & typography
+   ========================================================================== */
+
+.section { padding: 54px 0; }
+.section + .section { border-top: 1px solid var(--border); }
+
+.section h2 {
+  margin: 0 0 8px;
+  font-size: 1.62rem;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+.section .lede {
+  margin: 0 0 30px;
+  color: var(--ink-2);
+  max-width: 800px;
+}
+.section h3 {
+  margin: 34px 0 12px;
+  font-size: 1.12rem;
+  letter-spacing: -0.01em;
+  font-weight: 660;
+}
+.section h4 {
+  margin: 22px 0 8px;
+  font-size: 0.98rem;
+  font-weight: 660;
+}
+
+.step-label {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "clig" 0;
+  white-space: nowrap;
+}
+
+p { margin: 0 0 16px; }
+.prose { max-width: 800px; }
+.prose p:last-child { margin-bottom: 0; }
+
+.muted { color: var(--ink-muted); }
+.small { font-size: 0.85rem; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* ==========================================================================
+   Figures
+   ========================================================================== */
+
+.figure { margin: 0 0 8px; }
+/* Light mode: the paper figures are transparent PNGs whose own panel artwork
+   already carries the light backdrop, so they sit straight on the page. The
+   white plate that used to be here only showed up as a white ring around the
+   artwork's transparent margins plus a hairline border. */
+.figure img, .figure picture img {
+  width: 100%;
+}
+/* Dark mode keeps the plate it always had: framework.png's panel fills are
+   only ~56% opaque, so against the dark page its headings and labels become
+   unreadable. The plate can go once the asset is re-exported with opaque
+   panel fills — until then this is the only thing keeping that figure legible. */
+:root[data-theme="dark"] .figure img,
+:root[data-theme="dark"] .figure picture img {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .figure img,
+  :root:where(:not([data-theme="light"])) .figure picture img {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+}
+.figure figcaption {
+  margin-top: 12px;
+  color: var(--ink-2);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  max-width: 880px;
+}
+.figure figcaption b { color: var(--ink); font-weight: 620; }
+
+/* ==========================================================================
+   Stat tiles
+   ========================================================================== */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 14px;
+  margin: 6px 0 0;
+}
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 18px 15px;
+}
+.stat .value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.stat .value small { font-size: 0.9rem; font-weight: 560; color: var(--ink-2); letter-spacing: 0; }
+.stat .value.compact { font-size: 1.3rem; letter-spacing: -0.01em; }
+.stat .label {
+  margin-top: 5px;
+  color: var(--ink-2);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Cards
+   ========================================================================== */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(226px, 1fr));
+  gap: 14px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.card .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 680;
+  font-size: 0.86rem;
+  color: var(--ink);
+}
+.card .chip::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--chip, var(--accent));
+}
+.card h4 { margin: 10px 0 6px; font-size: 1rem; }
+.card p { margin: 0; color: var(--ink-2); font-size: 0.88rem; line-height: 1.55; }
+.card .n { display: block; margin-top: 10px; color: var(--ink-muted); font-size: 0.8rem; }
+
+/* tags / chips row */
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 0; padding: 0; list-style: none; }
+.tags li {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-2);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.83rem;
+}
+
+/* ==========================================================================
+   Tables
+   ========================================================================== */
+
+.table-scroll { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); }
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+table.data th, table.data td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+table.data thead th {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+  font-weight: 620;
+  white-space: nowrap;
+  background: var(--surface-2);
+}
+table.data tbody tr:last-child td { border-bottom: none; }
+table.data td.num, table.data th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.data tbody tr:hover td { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+table.data tr.total td { font-weight: 640; background: var(--surface-2); }
+table.data td.bold { font-weight: 660; }
+
+.src {
+  display: inline-block;
+  font-size: 0.74rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Formulas
+   ========================================================================== */
+
+.formula {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 18px;
+  margin: 0 0 14px;
+}
+.frow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(170px, 250px) 34px;
+  align-items: center;
+  gap: 6px 16px;
+  padding: 9px 0;
+}
+.frow + .frow { border-top: 1px solid var(--border); }
+.fmath { min-width: 0; overflow-x: auto; padding: 2px 0; }
+.fmath .katex-display { margin: 0; }
+.fmath .katex { font-size: 1.02em; }
+/* KaTeX ships 1.21em, which makes inline math 21% larger than body text — match the copy */
+.katex { font-size: 1em; }
+.fnote { font-size: 0.78rem; line-height: 1.5; color: var(--ink-muted); }
+.fnum {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 720px) {
+  .frow { grid-template-columns: minmax(0, 1fr) 30px; }
+  .fmath { grid-column: 1; grid-row: 1; }
+  .fnum { grid-column: 2; grid-row: 1; }
+  .fnote { grid-column: 1 / -1; grid-row: 2; }
+}
+@media (max-width: 640px) {
+  .fmath .katex { font-size: 0.88em; }   /* keep the widest equation inside the card */
+}
+
+/* ==========================================================================
+   Charts (shared)
+   ========================================================================== */
+
+.chart {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 22px 16px;
+  display: flex;
+  flex-direction: column;   /* lets the trailing block sit on the card floor */
+}
+.chart-title {
+  margin: 0 0 2px;
+  font-size: 0.98rem;
+  font-weight: 660;
+}
+.chart-sub {
+  margin: 0 0 16px;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; }
+@media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  margin-top: 16px;
+  color: var(--ink-2);
+  font-size: 0.8rem;
+}
+.legend .item { display: inline-flex; align-items: center; gap: 7px; }
+.legend .sw { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.legend .dot-sw { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.legend .dot-sw.hollow { background: var(--surface); border: 2.5px solid var(--cond-2); }
+.legend .dot-sw.filled { background: var(--cond-4); box-shadow: 0 0 0 2px var(--surface); }
+.legend .line-sw { width: 14px; height: 2px; background: var(--ink-muted); flex: none; }
+
+/* horizontal gridlines + labels (inside a relative plot box) */
+.gl { position: absolute; left: 0; right: 0; border-top: 1px solid var(--grid); }
+.gl.base { border-top-color: var(--axis); }
+.gl span {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: -0.62em;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* --- grouped column chart (pooled BRS by arm, 2 views) --- */
+
+.gcols {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  height: 240px;
+  min-height: 240px;
+  flex: 1 1 auto;              /* absorb a stretched card's spare height */
+  margin: 38px 0 0 46px;
+}
+.gcol-group {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;                    /* 2px surface gap between the paired bars */
+}
+.gbar {
+  position: relative;
+  width: 22px;
+  max-width: 40%;
+  height: var(--v);
+  background: var(--c);
+  border-radius: 4px 4px 0 0; /* rounded data-end, square at the baseline */
+}
+.gbar::after { content: ""; position: absolute; inset: -6px -8px 0 -8px; }
+.gval {
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.78rem;
+  font-weight: 640;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.gcol-axis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  border-top: 1px solid var(--axis);
+  padding-top: 8px;
+  margin: 0 0 0 46px;
+}
+.gcol-axis .t { text-align: center; font-size: 0.82rem; color: var(--ink-2); line-height: 1.35; }
+.gcol-axis .t b { display: block; color: var(--ink); font-weight: 620; }
+.gcol-axis .t span { display: block; font-size: 0.72rem; color: var(--ink-muted); }
+.step-gains {
+  margin: 8px 0 0 46px;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  line-height: 1.5;
+}
+.step-gains b { color: var(--ink-2); font-weight: 640; }
+
+/* --- dumbbell chart (per-model BRS, S0 -> S2) --- */
+
+.dumb { margin-top: 16px; }
+.dumb-row {
+  display: grid;
+  grid-template-columns: 118px 1fr 54px;
+  gap: 10px;
+  align-items: center;
+  padding: 4px 0;
+}
+.dumb-row + .dumb-row { border-top: 1px solid var(--grid); }
+.dumb-name {
+  font-size: 0.79rem;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dumb-plot {
+  position: relative;
+  height: 26px;
+  /* vertical gridlines at 0 / 0.2 / 0.4 / 0.6 / 0.8 (domain 0-0.8) */
+  background-image: linear-gradient(to right, var(--grid) 1px, transparent 1px);
+  background-size: 25% 100%;
+}
+.dumb-line {
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: var(--ink-muted);
+  border-radius: 1px;
+}
+.dumb-dot {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.dumb-dot.s0 { background: var(--surface); border: 2.5px solid var(--cond-2); }
+.dumb-dot.s2 { background: var(--cond-4); box-shadow: 0 0 0 2px var(--surface); }
+.dumb-delta {
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+.dumb-axis {
+  position: relative;
+  height: 20px;
+  margin: 2px 0 0 128px;
+}
+.dumb-axis .tick {
+  position: absolute;
+  top: 4px;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) {
+  .dumb-row { grid-template-columns: 88px 1fr 46px; gap: 8px; }
+  .dumb-name { font-size: 0.72rem; }
+  .dumb-axis { margin-left: 96px; }
+}
+
+/* --- dot-row chart (refusal rates by prompt framing, 3 lanes) --- */
+
+.fr { margin-top: 14px; }
+.fr-row {
+  display: grid;
+  grid-template-columns: 118px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 0;
+}
+.fr-row + .fr-row { border-top: 1px solid var(--grid); }
+.fr-name { font-size: 0.79rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-plot {
+  position: relative;
+  height: 36px;
+  /* vertical gridlines at 0% / 50% / 100% */
+  background-image: linear-gradient(to right, var(--grid) 1px, transparent 1px);
+  background-size: 50% 100%;
+}
+.fr-dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.fr-dot.f1 { background: var(--cond-1); }
+.fr-dot.f2 { background: var(--cond-3); }
+.fr-dot.f3 { background: var(--cond-4); }
+.fr-axis { position: relative; height: 20px; margin: 2px 0 0 128px; }
+.fr-axis .tick {
+  position: absolute;
+  top: 4px;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) {
+  .fr-row { grid-template-columns: 92px 1fr; gap: 8px; }
+  .fr-name { font-size: 0.72rem; }
+  .fr-axis { margin-left: 102px; }
+}
+
+/* the BibTeX block sits under a narrow centred header, so match its measure */
+#citation .bib { max-width: 820px; margin-left: auto; margin-right: auto; }
+
+/* table-view block pinned to the bottom of a stretched chart card — kept for
+   any future in-card table; the three data tables now live outside the grid */
+
+/* cards in a stretched row anchor their legend to the bottom edge, so the
+   residual height difference between paired charts is absorbed above the
+   legend instead of showing as an empty band */
+.chart > .legend:last-child { margin-top: auto; }
+
+/* standalone full-width Table 10 (the data behind dumbbell charts a and b) */
+.tv-wide {
+  margin-top: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px 18px;
+  scroll-margin-top: 84px;   /* sticky header clearance when scrolled to from the charts */
+}
+.tv-wide[open] { padding-bottom: 18px; }
+.tv-wide > .table-scroll { margin-top: 12px; }
+
+/* table view (details) */
+.tv { margin-top: 14px; }
+.tv summary {
+  cursor: pointer;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tv summary::-webkit-details-marker { display: none; }
+.tv summary::before {
+  content: "▸";
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  transition: transform 0.15s ease;
+}
+.tv[open] summary::before { transform: rotate(90deg); }
+.tv summary:hover { color: var(--ink); }
+.tv .table-scroll { margin-top: 10px; }
+
+/* ==========================================================================
+   Tooltips (hover / focus)
+   ========================================================================== */
+
+/* Zero-specificity: provides a positioning context for tooltip anchors
+   without overriding the position of chart marks (.dumb-dot, .fr-dot). */
+:where([data-tip]) { position: relative; }
+[data-tip]:focus-visible { outline-offset: 4px; }
+[data-tip] .tiptext {
+  position: absolute;
+  z-index: 30;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 240px;
+  background: var(--ink);
+  color: var(--page);
+  font-size: 0.76rem;
+  line-height: 1.45;
+  font-weight: 480;
+  padding: 7px 11px;
+  border-radius: 8px;
+  white-space: normal;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  box-shadow: var(--shadow);
+}
+[data-tip] .tiptext b { font-weight: 660; }
+[data-tip]:hover .tiptext,
+[data-tip]:focus .tiptext { opacity: 1; }
+
+/* keep edge tooltips inside the chart card (the 4 .gcol-group divs are the last 4 children of .gcols) */
+.gcol-group:nth-last-child(4) .tiptext { left: 0; transform: none; }
+.gcol-group:nth-last-child(1) .tiptext { left: auto; right: 0; transform: none; }
+
+/* ==========================================================================
+   Citation / code blocks
+   ========================================================================== */
+
+.bib {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  overflow-x: auto;
+}
+.bib pre {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.copy-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 0.76rem;
+  padding: 5px 11px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: var(--sans);
+}
+.copy-btn:hover { color: var(--ink); border-color: var(--axis); }
+
+/* code inline */
+code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+/* findings blocks */
+.findings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+@media (max-width: 900px) { .findings { grid-template-columns: 1fr; } }
+.finding {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.finding h4 { margin: 0 0 8px; font-size: 0.95rem; }
+.finding p { margin: 0; color: var(--ink-2); font-size: 0.87rem; line-height: 1.6; }
+.finding p + p { margin-top: 10px; }
+.finding b { color: var(--ink); font-weight: 620; }
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 30px 0 44px;
+  color: var(--ink-muted);
+  font-size: 0.84rem;
+}
+.site-footer .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  align-items: center;
+  justify-content: space-between;
+}
+.site-footer a { color: var(--ink-2); }
+
+/* ==========================================================================
+   Section headers & banding
+   A hairline between sections was doing all the dividing work, which is not
+   enough for a page this long. Each section now opens with a header block
+   (icon badge + numbered eyebrow + centred heading + accent rule), and
+   alternating sections get a faint accent band and dot grid so the eye can
+   tell where it is while scrolling.
+   ========================================================================== */
+
+.section { position: relative; padding: 78px 0; }
+.section > .wrap { position: relative; z-index: 1; }
+
+/* NOTE: no overflow:hidden here — it would clip the chart tooltips, which
+   extend above their marks. The banding gradient is inset:0, so it cannot
+   overflow anyway. */
+.section--alt {
+  background: color-mix(in srgb, var(--accent) 4%, var(--page));
+}
+.section--alt::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(560px 240px at var(--glow-x, 50%) 0%, var(--accent-wash), transparent 70%),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--accent) 30%, transparent) 1px, transparent 0);
+  background-size: auto, 22px 22px;
+  opacity: 0.5;
+}
+
+.section-head {
+  text-align: center;
+  max-width: 780px;
+  margin: 0 auto 30px;
+}
+.sh-badge {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 16px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  color: var(--accent);
+  box-shadow: var(--shadow);
+}
+.sh-badge svg { width: 28px; height: 28px; }
+.sh-eyebrow {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 720;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  margin-bottom: 10px;
+}
+.section-head h2,
+.section .section-head h2 {
+  margin: 0;
+  font-size: clamp(1.52rem, 3.3vw, 2.08rem);
+  line-height: 1.17;
+  letter-spacing: -0.026em;
+  font-weight: 730;
+}
+.sh-rule {
+  display: block;
+  width: 56px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+  margin: 18px auto 0;
+}
+/* the lede belongs to the header block, so it centres with it and stays short */
+.section .section-head + .lede {
+  text-align: center;
+  margin: 0 auto 32px;
+  max-width: 650px;
+}
+
+@media (max-width: 640px) {
+  .section { padding: 58px 0; }
+  .sh-badge { width: 50px; height: 50px; border-radius: 15px; margin-bottom: 13px; }
+  .sh-badge svg { width: 24px; height: 24px; }
+  .sh-rule { margin-top: 15px; }
+}
+
+/* ==========================================================================
+   Decorative DNA helix
+   A seamless CSS loop: the pattern spans one full period beyond each edge of
+   the viewBox, and the group is translated by exactly one period, so the wrap
+   point is never on screen. Transform-only, so it stays on the compositor —
+   no JS, no canvas, no per-frame work. Under prefers-reduced-motion the global
+   rule stops the animation and the helix simply sits still.
+   ========================================================================== */
+
+.dna { display: block; width: 100%; height: 100%; }
+.dna-strands { fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; }
+.dna-rung { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; }
+.dna-scroll {
+  animation: dna-drift var(--dur, 22s) linear infinite;
+  will-change: transform;
+}
+@keyframes dna-drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(var(--shift)); }
+}
+
+/* hero band: sits in the hero's top padding, dissolving before the content */
+.hero-dna {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 172px;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+:root[data-theme="dark"] .hero-dna { opacity: 0.42; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .hero-dna { opacity: 0.42; }
+}
+
+/* ribbon divider: a full-width helix used as a section separator */
+.dna-rule {
+  height: 104px;
+  opacity: 0.6;
+  pointer-events: none;
+  overflow: hidden;
+}
+:root[data-theme="dark"] .dna-rule { opacity: 0.46; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .dna-rule { opacity: 0.46; }
+}
+@media (max-width: 700px) {
+  .hero-dna { height: 126px; }
+  .dna-rule { height: 78px; }
+}
+
+/* ==========================================================================
+   Inline math and equation layout
+   Inline variables use a serif italic; block equations use native MathML so
+   fractions, sums and limits follow browser math typography without a script.
+   ========================================================================== */
+
+.math { white-space: nowrap; }
+.math var {
+  font-style: italic;
+  font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+  padding-right: 0.04em;
+}
+.math sub, .math sup { font-size: 0.7em; font-style: normal; }
+.math sub { vertical-align: -0.25em; }
+.math sup { vertical-align: 0.45em; }
+.math .frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0 0.2em;
+  line-height: 1.25;
+}
+.math .frac > span { display: block; padding: 0 0.32em; }
+.math .frac > span:first-child { border-bottom: 1px solid currentColor; padding-bottom: 0.05em; }
+.math .frac > span + span { padding-top: 0.05em; }
+
+.eq {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 2px 18px;
+  margin: 0 0 14px;
+  overflow-x: auto;
+}
+.eq .row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(140px, 200px);
+  gap: 2px 16px;
+  align-items: center;
+  padding: 11px 0;
+}
+.eq-math {
+  min-width: 0;
+  overflow-x: auto;
+  padding: 2px 0;
+  font-size: 1.05em;
+  font-family: "STIX Two Math", "Cambria Math", "Latin Modern Math", serif;
+}
+.eq .row + .row { border-top: 1px solid var(--border); }
+.eq .row .note { font-size: 0.78rem; line-height: 1.5; color: var(--ink-muted); }
+@media (max-width: 700px) {
+  .eq .row { grid-template-columns: 1fr; }
+  .eq .row .note { text-align: right; }
+}
+
+/* ==========================================================================
+   Background — the capability shift
+   ========================================================================== */
+
+.shift { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.shift-col {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 16px 15px;
+  display: flex;
+  flex-direction: column;
+}
+.shift-col .era {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-weight: 640;
+}
+.shift-col h4 { margin: 7px 0 6px; font-size: 0.98rem; }
+.shift-col p { margin: 0; font-size: 0.85rem; color: var(--ink-2); line-height: 1.55; }
+
+.meter { margin-top: auto; padding-top: 14px; }
+.meter .track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.meter .fill {
+  display: block;
+  height: 100%;
+  width: var(--v);
+  background: var(--c, var(--accent));
+  border-radius: 999px 0 0 999px;
+}
+.meter .ml {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 7px;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+.meter .ml b { color: var(--ink-2); font-weight: 620; }
+@media (max-width: 780px) { .shift { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   Gaps
+   ========================================================================== */
+
+.gaps { display: grid; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr)); gap: 14px; }
+.gap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+}
+.gap .n {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent-ink);
+  font-weight: 680;
+}
+.gap h4 { margin: 8px 0 7px; font-size: 1rem; }
+.gap p { margin: 0; font-size: 0.87rem; color: var(--ink-2); line-height: 1.58; }
+.gap .cost {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+.gap .cost b { color: var(--ink-2); font-weight: 620; }
+
+/* verification trilemma: three rejected paradigms, then the adopted one */
+.tri { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tri .opt {
+  border: 1px dashed var(--border);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.tri .opt b {
+  display: block;
+  color: var(--ink);
+  font-size: 0.87rem;
+  margin-bottom: 5px;
+  font-weight: 630;
+}
+.tri .opt b::after { content: "  ✕"; color: var(--ink-muted); font-weight: 700; }
+
+/* the adopted paradigm — a full-width resolution under the three rejects */
+.tri-solve {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 2fr);
+  gap: 6px 22px;
+  align-items: start;
+  margin-top: 10px;
+  padding: 16px 18px;
+  border: 1px solid var(--accent);
+  background: var(--accent-wash);
+  border-radius: 10px;
+  font-size: 0.86rem;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+.tri-solve .h { font-size: 0.92rem; font-weight: 660; color: var(--ink); }
+.tri-solve .h::after { content: "  ✓"; color: var(--accent); font-weight: 700; }
+.tri-solve b { color: var(--ink); font-weight: 620; }
+@media (max-width: 700px) {
+  .tri { grid-template-columns: 1fr; }
+  .tri-solve { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   Coverage explorer — nominal bars, single hue (see palette note at top)
+   ========================================================================== */
+
+.cov { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 880px) { .cov { grid-template-columns: 1fr; } }
+
+.cov-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 58px;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  padding: 4px 6px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.cov-row:hover { background: var(--surface-2); }
+.cov-row[aria-pressed="true"] { background: var(--surface-2); }
+.cov-code {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.cov-track {
+  position: relative;
+  height: 19px;
+  background: var(--surface-2);
+  border-radius: 4px;
+}
+.cov-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--v);
+  background: var(--accent);
+  border-radius: 0 4px 4px 0;   /* rounded data-end, square at the baseline */
+  opacity: 0.4;
+  transition: opacity 0.15s ease;
+}
+.cov-row[aria-pressed="true"] .cov-fill { opacity: 1; }
+.cov-val {
+  text-align: right;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+
+.cov-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.cov-panel .pc {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+.cov-panel .pc .dot { width: 12px; height: 12px; border-radius: 3px; background: var(--accent); }
+.cov-panel h4 { margin: 11px 0 7px; font-size: 1.02rem; line-height: 1.3; }
+.cov-panel p { margin: 0 0 14px; font-size: 0.87rem; color: var(--ink-2); line-height: 1.6; }
+.cov-kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 7px 14px;
+  font-size: 0.82rem;
+  border-top: 1px solid var(--border);
+  padding-top: 13px;
+  margin: 0;
+}
+.cov-kv dt { color: var(--ink-muted); }
+.cov-kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+
+/* ==========================================================================
+   Workflow arms — the 2x2 factorial matrix
+   ========================================================================== */
+
+.arms2 {
+  display: grid;
+  grid-template-columns: 74px repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+.arms2 .hd {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+  font-weight: 640;
+  line-height: 1.35;
+}
+.arms2 .hd.col-hd { text-align: center; padding-bottom: 2px; }
+.arms2 .hd.row-hd { display: flex; align-items: center; }
+.arm-cell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 15px 16px 14px;
+}
+.arm-cell .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 680;
+  font-size: 0.84rem;
+}
+.arm-cell .chip::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  background: var(--chip, var(--accent));
+  flex: none;
+}
+.arm-cell .v {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.42rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.arm-cell p { margin: 6px 0 0; font-size: 0.81rem; color: var(--ink-2); line-height: 1.5; }
+@media (max-width: 620px) {
+  .arms2 { grid-template-columns: 1fr; }
+  .arms2 .hd.col-hd, .arms2 .hd.row-hd { display: none; }
+}
+
+/* ==========================================================================
+   Release tiers
+   ========================================================================== */
+
+.tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 760px) { .tiers { grid-template-columns: 1fr; } }
+.tier {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.tier.open { border-left: 3px solid var(--accent); }
+.tier.private { border-left: 3px solid var(--axis); }
+.tier .th { display: flex; align-items: center; gap: 9px; font-weight: 680; font-size: 0.95rem; }
+.tier .swatch { width: 13px; height: 13px; border-radius: 4px; flex: none; }
+.tier.open .swatch { background: var(--accent); }
+.tier.private .swatch { background: var(--axis); }
+.tier ul { margin: 13px 0 0; padding: 0; list-style: none; }
+.tier li {
+  position: relative;
+  padding-left: 19px;
+  font-size: 0.86rem;
+  color: var(--ink-2);
+  line-height: 1.55;
+  margin-bottom: 8px;
+}
+.tier li:last-child { margin-bottom: 0; }
+.tier li::before { content: "—"; position: absolute; left: 0; color: var(--ink-muted); }
+
+/* 30-scenario waffle: 15 named and open, 15 withheld */
+.waffle { display: grid; grid-template-columns: repeat(15, 1fr); gap: 4px; margin-top: 18px; }
+.waffle .cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--accent);
+  opacity: 0.85;
+}
+.waffle .cell.priv { background: transparent; border: 1px dashed var(--axis); opacity: 1; }
+@media (max-width: 640px) { .waffle { grid-template-columns: repeat(6, 1fr); } }
+
+/* ==========================================================================
+   Figure zoom + lightbox
+   The two paper figures carry dense panel text that is unreadable when scaled
+   to a phone viewport; clicking opens them in a lightbox that is wider than
+   the screen on touch devices, so the reader pans.
+   ========================================================================== */
+
+.fig-zoom {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  position: relative;
+  border-radius: var(--radius);
+}
+.fig-zoom-icon {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border: 1px solid var(--border);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.fig-zoom:hover .fig-zoom-icon,
+.fig-zoom:focus-visible .fig-zoom-icon { opacity: 1; }
+@media (hover: none) {
+  .fig-zoom-icon { opacity: 0.9; }   /* touch: keep the affordance visible */
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: color-mix(in srgb, #000 74%, transparent);
+  display: flex;
+}
+.lightbox[hidden] { display: none; }
+.lb-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.lb-close:hover { background: rgba(0, 0, 0, 0.75); }
+.lb-close svg { width: 18px; height: 18px; }
+.lb-scroll {
+  flex: 1;
+  overflow: auto;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+.lb-img {
+  max-width: min(1400px, 100%);
+  max-height: calc(100vh - 36px);
+  border-radius: 4px;
+  background: #fff;   /* both figures are transparent PNGs; keep a white plate on the dark scrim */
+}
+@media (max-width: 760px) {
+  .lb-scroll { place-items: start; }
+  .lb-img { width: 1100px; max-width: none; max-height: none; }   /* bigger than the screen: pan to read */
+}
+
+/* ==========================================================================
+   Sortable / comparable results table (Table 10)
+   ========================================================================== */
+
+.sort-btn {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sort-btn::after { content: "\2195"; font-size: 0.85em; opacity: 0.5; }
+th[aria-sort="ascending"] .sort-btn::after { content: "\2191"; opacity: 1; color: var(--accent); }
+th[aria-sort="descending"] .sort-btn::after { content: "\2193"; opacity: 1; color: var(--accent); }
+th[data-sort]:hover { color: var(--ink); }
+
+table.data th.cmp-h { padding-right: 6px; }
+table.data td.cmp { width: 1%; padding-right: 6px; }
+table.data td.cmp input { accent-color: var(--accent); width: 15px; height: 15px; margin: 0; vertical-align: middle; }
+table.data tr.cmp-on td { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+
+.cmp-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 0 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.cmp-strip[hidden] { display: none; }
+.cmp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 5px 8px 5px 12px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.cmp-chip b { font-weight: 640; }
+.cmp-chip .cmp-d { font-weight: 640; }
+.cmp-chip .cmp-d[data-d="up"] { color: var(--view-floor); }    /* risk amplified */
+.cmp-chip .cmp-d[data-d="down"] { color: var(--cond-3); }      /* risk reduced */
+.cmp-chip button {
+  appearance: none;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.cmp-chip button:hover { color: var(--ink); background: var(--axis); }
+.cmp-hint { font-size: 0.72rem; color: var(--ink-muted); margin-left: auto; }
+
+/* ==========================================================================
+   Waffle scenario identifiers (touch + keyboard)
+   Open squares show their scenario id on hover, tap (focus) and keyboard focus;
+   the ids used to live in a bare list that carried no information for readers.
+   ========================================================================== */
+
+.waffle .cell { position: relative; }
+.waffle .cell[tabindex]:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.waffle .cell[tabindex]::after {
+  content: attr(data-id);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  z-index: 20;
+  background: var(--ink);
+  color: var(--page);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 5px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+.waffle .cell[tabindex]:hover::after,
+.waffle .cell[tabindex]:focus::after { opacity: 1; }

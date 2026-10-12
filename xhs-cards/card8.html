@@ -1,0 +1,42 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:1080px; height:1440px; overflow:hidden; }
+:root {
+  --page:#0d0d0d; --surface:#1a1a19; --surface2:#232322;
+  --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --border:rgba(255,255,255,.10);
+  --accent:#3987e5; --accent-ink:#86b6ef; --wash:#16283f; --floor:#d95926;
+}
+body {
+  font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--page); color:var(--ink);
+  width:1080px; height:1440px; position:relative;
+  display:flex; flex-direction:column; padding:96px 90px 60px;
+}
+body::before {
+  content:""; position:absolute; inset:0;
+  background:radial-gradient(900px 500px at 85% -5%, rgba(57,135,229,.14), transparent 60%),
+             radial-gradient(700px 420px at -10% 105%, rgba(57,135,229,.07), transparent 55%);
+  pointer-events:none;
+}
+.mono { font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; }
+.top { display:flex; justify-content:space-between; align-items:center; margin-bottom:70px; }
+.brand { font-size:30px; letter-spacing:.28em; color:var(--muted); font-weight:600; }
+.tag { font-size:28px; color:var(--accent-ink); border:1.5px solid rgba(57,135,229,.45);
+       padding:10px 26px; border-radius:999px; background:var(--wash); }
+.footer { margin-top:auto; padding-top:36px; border-top:1px solid var(--border);
+          display:flex; justify-content:space-between; align-items:center; }
+.footer .fbrand { font-size:26px; color:var(--muted); letter-spacing:.2em; }
+.footer .fnum { font-size:28px; color:var(--muted); }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:28px; }
+</style></head><body>
+<div class="top"><span class="brand">DRYLAB-BENCH</span><span class="tag">资源卡</span></div>
+<div style="font-size:84px; font-weight:800; margin-bottom:40px;">想看原文的，<br>收好这张图</div>
+<div class="card" style="padding:10px 54px;"><div style="display:flex; align-items:center; gap:34px; padding:32px 0;border-bottom:1px solid var(--border);"><span style="flex:none; font-size:52px;">🌐</span><span style="flex:none; width:190px; font-size:34px; color:var(--muted);">项目主页</span><span class="mono" style="font-size:34px; font-weight:700; white-space:nowrap;">drylab-bio.github.io</span></div><div style="display:flex; align-items:center; gap:34px; padding:32px 0;border-bottom:1px solid var(--border);"><span style="flex:none; font-size:52px;">🐙</span><span style="flex:none; width:190px; font-size:34px; color:var(--muted);">GitHub</span><span class="mono" style="font-size:34px; font-weight:700; white-space:nowrap;">drylab-bio/DRYLAB-Bench</span></div><div style="display:flex; align-items:center; gap:34px; padding:32px 0;"><span style="flex:none; font-size:52px;">📄</span><span style="flex:none; width:190px; font-size:34px; color:var(--muted);">论文</span><span class="mono" style="font-size:34px; font-weight:700; white-space:nowrap;">arXiv 即将上线</span></div></div>
+<div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:28px;">
+  <div style="font-size:72px; font-weight:800;">收藏这张图就够了 📌</div>
+  <div style="font-size:34px; color:var(--muted);">论文挂出后，评论区置顶第一时间更新</div>
+</div>
+<div style="margin-bottom:48px; padding:28px 40px; border-radius:20px; background:var(--wash); font-size:33px; color:var(--accent-ink); line-height:1.6;">
+关于评测设计的问题，评论区必回。</div>
+<div class="footer"><span class="fbrand">DRYLAB-BENCH · AI 生物安全风险评测</span><span class="fnum mono">08 / 08</span></div></body></html>
