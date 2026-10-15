@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://drylab-bio.github.io/sitemap.xml

@@ -310,6 +310,14 @@ section { scroll-margin-top: 84px; }
   line-height: 1.5;
 }
 
+.hero-summary {
+  max-width: 700px;
+  margin: -4px auto 20px;
+  color: var(--ink-2);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
 .hero-claim {
   max-width: 780px;
   margin: 0 auto 22px;
